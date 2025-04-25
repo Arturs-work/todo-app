@@ -1,1 +1,3 @@
-# todo-app
+# TODO app
+
+Just another todo app in the making...
