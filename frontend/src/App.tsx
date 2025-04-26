@@ -1,26 +1,34 @@
 import React from 'react';
-import { createGlobalStyle } from 'styled-components';
 import Test from './pages/Test';
+import { ThemeProvider, useTheme } from './ThemeContext';
+import GlobalStyle from './styles/GlobalStyle';
+import ThemeToggle from './components/ThemeToggle';
+import TaskSpeedDial from './components/TaskSpeedDial';
 
-const GlobalStyle = createGlobalStyle`
-  body {
-    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
-  }
-`;
-
-function App() {
+const AppContent = () => {
   return (
     <>
       <GlobalStyle />
       <div className="App">
         <header className="App-header">
           <h1>Todo App</h1>
+          <ThemeToggle />
         </header>
         <main>
           <Test />
         </main>
+        
+        <TaskSpeedDial />
       </div>
     </>
+  );
+};
+
+function App() {
+  return (
+    <ThemeProvider>
+      <AppContent />
+    </ThemeProvider>
   );
 }
 

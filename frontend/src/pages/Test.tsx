@@ -10,57 +10,6 @@ const Container = styled.div`
   padding: 20px;
 `;
 
-const Section = styled.div`
-  border-radius: 12px;
-  padding: 20px;
-  margin-bottom: 20px;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-
-  h2 {
-    margin-top: 0;
-    margin-bottom: 20px;
-  }
-`;
-
-const Button = styled.button`
-  padding: 10px 20px;
-  font-size: 16px;
-  background-color: #007bff;
-  color: white;
-  border: none;
-  border-radius: 4px;
-  cursor: pointer;
-  margin: 10px 0;
-  transition: background-color 0.2s;
-
-  &:hover {
-    background-color: #0056b3;
-  }
-
-  &:disabled {
-    background-color: #ccc;
-    cursor: not-allowed;
-  }
-`;
-
-const ErrorMessage = styled.div`
-  color: #dc3545;
-  padding: 15px;
-  border: 1px solid #dc3545;
-  border-radius: 4px;
-  margin: 10px 0;
-  background-color: #fff;
-`;
-
-const SuccessMessage = styled.div`
-  color: #28a745;
-  padding: 15px;
-  border: 1px solid #28a745;
-  border-radius: 4px;
-  margin: 10px 0;
-  background-color: #fff;
-`;
-
 const Test: React.FC = () => {
   const [taskResponse, setTaskResponse] = useState<Task | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -94,27 +43,6 @@ const Test: React.FC = () => {
 
   return (
     <Container>
-      <Section>
-        <h2>Test API</h2>
-
-        <Button 
-          onClick={getTest} 
-          disabled={loading}>
-          {loading ? 'Testing...' : 'Test'}
-        </Button>
-
-        {taskResponse && (
-          <SuccessMessage>
-            <h3>Endpoint tested successfuly!</h3>
-          </SuccessMessage>
-        )}
-      </Section>
-
-      {error && (
-        <ErrorMessage>
-          {error}
-        </ErrorMessage>
-      )}
     </Container>
   );
 };
