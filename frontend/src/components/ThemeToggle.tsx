@@ -3,7 +3,7 @@ import IconButton from '@mui/material/IconButton';
 import Brightness4Icon from '@mui/icons-material/Brightness4';
 import Brightness7Icon from '@mui/icons-material/Brightness7';
 import Box from '@mui/material/Box';
-import { useTheme } from '../ThemeContext';
+import { useTheme } from '../context/ThemeContext';
 
 const ThemeToggle: React.FC = () => {
   const { mode, toggleColorMode } = useTheme();
@@ -17,4 +17,4 @@ const ThemeToggle: React.FC = () => {
   );
 };
 
-export default ThemeToggle; 
+export default ThemeToggle;

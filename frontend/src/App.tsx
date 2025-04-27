@@ -1,25 +1,44 @@
-import React from 'react';
-import Test from './pages/Test';
-import { ThemeProvider, useTheme } from './ThemeContext';
+import React, { useState } from 'react';
+import { ThemeProvider } from './context/ThemeContext';
 import GlobalStyle from './styles/GlobalStyle';
 import ThemeToggle from './components/ThemeToggle';
-import TaskSpeedDial from './components/TaskSpeedDial';
+import TaskCreator from './components/TaskCreator';
+import TaskList from './components/TaskList';
+import { Task } from './types/Task';
+import { Typography, Box } from '@mui/material';
 
 const AppContent = () => {
+  const [tasks, setTasks] = useState<Task[]>([]);
+
+  const handleTaskCreated = (task: Task) => {
+    setTasks([...tasks, task]);
+  };
+
   return (
     <>
       <GlobalStyle />
-      <div className="App">
-        <header className="App-header">
-          <h1>Todo App</h1>
+      <Box sx={{ minHeight: '100vh', bgcolor: 'background.default' }}>
+        <Box component="header" sx={{ 
+          p: 2, 
+          display: 'flex', 
+          justifyContent: 'space-between', 
+          alignItems: 'center',
+          bgcolor: 'background.paper',
+          boxShadow: 3
+        }}>
+          <Typography component="h1">
+            Todo App
+          </Typography>
           <ThemeToggle />
-        </header>
-        <main>
-          <Test />
-        </main>
+        </Box>
         
-        <TaskSpeedDial />
-      </div>
+        <TaskList 
+          tasks={tasks}
+          onTasksChange={setTasks}
+        />
+        
+        <TaskCreator onTaskCreated={handleTaskCreated} />
+      </Box>
     </>
   );
 };

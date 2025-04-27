@@ -1,30 +1,30 @@
-import React, { useState } from 'react';
+import AddIcon from '@mui/icons-material/Add';
+import Checklist from '@mui/icons-material/Checklist';
+import DeleteIcon from '@mui/icons-material/Delete';
+import EditIcon from '@mui/icons-material/Edit';
+import TextFields from '@mui/icons-material/TextFields';
+import Button from '@mui/material/Button';
+import Checkbox from '@mui/material/Checkbox';
+import Dialog from '@mui/material/Dialog';
+import DialogActions from '@mui/material/DialogActions';
+import DialogContent from '@mui/material/DialogContent';
+import DialogTitle from '@mui/material/DialogTitle';
+import IconButton from '@mui/material/IconButton';
+import List from '@mui/material/List';
+import ListItem from '@mui/material/ListItem';
+import ListItemText from '@mui/material/ListItemText';
 import SpeedDial from '@mui/material/SpeedDial';
 import SpeedDialAction from '@mui/material/SpeedDialAction';
 import SpeedDialIcon from '@mui/material/SpeedDialIcon';
-import TextFields from '@mui/icons-material/TextFields';
-import EditIcon from '@mui/icons-material/Edit';
-import Checklist from '@mui/icons-material/Checklist';
-import Dialog from '@mui/material/Dialog';
-import DialogTitle from '@mui/material/DialogTitle';
-import DialogContent from '@mui/material/DialogContent';
-import DialogActions from '@mui/material/DialogActions';
 import TextField from '@mui/material/TextField';
-import Button from '@mui/material/Button';
-import List from '@mui/material/List';
-import ListItem from '@mui/material/ListItem';
-import Checkbox from '@mui/material/Checkbox';
-import IconButton from '@mui/material/IconButton';
-import AddIcon from '@mui/icons-material/Add';
-import DeleteIcon from '@mui/icons-material/Delete';
-import Typography from '@mui/material/Typography';
+import React, { useState } from 'react';
 import { Task, TaskType } from '../types/Task';
 
-interface TaskSpeedDialProps {
-  onCreateTask: (task: Omit<Task, 'id' | 'createdAt' | 'completed'>) => void;
+interface TaskCreatorProps {
+  onTaskCreated: (task: Task) => void;
 }
 
-const TaskSpeedDial: React.FC<TaskSpeedDialProps> = ({ onCreateTask }) => {
+const TaskCreator: React.FC<TaskCreatorProps> = ({ onTaskCreated }) => {
   const [open, setOpen] = useState(false);
   const [taskType, setTaskType] = useState<TaskType | null>(null);
   const [title, setTitle] = useState('');
@@ -60,12 +60,18 @@ const TaskSpeedDial: React.FC<TaskSpeedDialProps> = ({ onCreateTask }) => {
   const handleSubmit = () => {
     if (!taskType || !title) return;
 
-    onCreateTask({
+    const newTask: Task = {
+      id: Date.now().toString(),
       type: taskType,
       title,
       content: taskType === 'text' ? content : checklistItems,
-    });
+      createdAt: new Date(),
+      completedItems: taskType === 'checklist' 
+        ? new Array((taskType === 'checklist' ? checklistItems : []).length).fill(false) 
+        : undefined,
+    };
 
+    onTaskCreated(newTask);
     handleClose();
   };
 
@@ -115,38 +121,34 @@ const TaskSpeedDial: React.FC<TaskSpeedDialProps> = ({ onCreateTask }) => {
             />
           ) : (
             <>
-              <ListItem sx={{ pl: 0, pr: 0 }}>
-                <Checkbox edge="start" disabled />
-                <TextField
-                  placeholder="Add new item"
-                  fullWidth
-                  value={newItem}
-                  onChange={(e) => setNewItem(e.target.value)}
-                  onKeyPress={(e) => e.key === 'Enter' && handleAddChecklistItem()}
-                  variant="standard"
-                  sx={{ ml: 1 }}
-                  InputProps={{
-                    endAdornment: (
-                      <IconButton onClick={handleAddChecklistItem} color="primary" size="small">
-                        <AddIcon />
-                      </IconButton>
-                    ),
-                  }}
-                />
-              </ListItem>
+              <TextField
+                margin="dense"
+                label="Add Item"
+                fullWidth
+                value={newItem}
+                onChange={(e) => setNewItem(e.target.value)}
+                onKeyPress={(e) => e.key === 'Enter' && handleAddChecklistItem()}
+                InputProps={{
+                  endAdornment: (
+                    <IconButton onClick={handleAddChecklistItem}>
+                      <AddIcon />
+                    </IconButton>
+                  ),
+                }}
+              />
               
               <List>
                 {checklistItems.map((item, index) => (
-                  <ListItem
-                    key={index}
-                    secondaryAction={
-                      <IconButton edge="end" onClick={() => handleRemoveChecklistItem(index)}>
-                        <DeleteIcon />
-                      </IconButton>
-                    }
-                  >
-                    <Checkbox edge="start" />
-                    <Typography sx={{ ml: 1 }}>{item}</Typography>
+                  <ListItem key={index} dense>
+                    <Checkbox
+                      edge="start"
+                      disabled
+                      checked={false}
+                    />
+                    <ListItemText primary={item} />
+                    <IconButton edge="end" onClick={() => handleRemoveChecklistItem(index)}>
+                      <DeleteIcon />
+                    </IconButton>
                   </ListItem>
                 ))}
               </List>
@@ -155,11 +157,7 @@ const TaskSpeedDial: React.FC<TaskSpeedDialProps> = ({ onCreateTask }) => {
         </DialogContent>
         <DialogActions>
           <Button onClick={handleClose}>Cancel</Button>
-          <Button 
-            onClick={handleSubmit} 
-            variant="contained"
-            disabled={!title || (taskType === 'checklist' && checklistItems.length === 0)}
-          >
+          <Button onClick={handleSubmit} variant="contained" color="primary">
             Create
           </Button>
         </DialogActions>
@@ -168,4 +166,4 @@ const TaskSpeedDial: React.FC<TaskSpeedDialProps> = ({ onCreateTask }) => {
   );
 };
 
-export default TaskSpeedDial; 
+export default TaskCreator; 
