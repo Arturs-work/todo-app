@@ -1,5 +1,5 @@
-import React from 'react';
-import { Container, Typography } from '@mui/material';
+import React, { useState, useEffect } from 'react';
+import { Container, Typography, Box, CircularProgress } from '@mui/material';
 import TaskCard from './TaskCard';
 import { Task } from '../types/Task';
 import { useSocket } from '../context/SocketContext';
@@ -11,6 +11,16 @@ interface TaskListProps {
 
 const TaskList: React.FC<TaskListProps> = ({ tasks, onTasksChange }) => {
   const { socket, isConnected } = useSocket();
+  const [isLoading, setIsLoading] = useState(true);
+
+  useEffect(() => {
+    // Simulate initial loading time
+    const timer = setTimeout(() => {
+      setIsLoading(false);
+    }, 1000);
+
+    return () => clearTimeout(timer);
+  }, []);
 
   const handleDeleteTask = (id: string) => {
     if (socket && isConnected) {
@@ -59,32 +69,56 @@ const TaskList: React.FC<TaskListProps> = ({ tasks, onTasksChange }) => {
       maxWidth="xl" 
       sx={{
         mt: 4,
-        columnCount: { xs: 1, sm: 'auto' },
-        columnWidth: { sm: '300px' },
-        columnGap: 2,
-        '& > *': {
-          breakInside: 'avoid',
-          marginBottom: 2,
-          display: 'inline-block',
-          width: '100%',
-          maxWidth: '100%'
-        }
+        display: 'flex',
+        flexDirection: 'column',
+        alignItems: 'center'
       }}
     >
-      {tasks.length === 0 ? (
-        <Typography variant="h6" color="text.secondary" align="center">
+      {isLoading ? (
+        <Box sx={{ 
+          display: 'flex', 
+          justifyContent: 'center', 
+          alignItems: 'center',
+          minHeight: '200px'
+        }}>
+          <CircularProgress />
+        </Box>
+      ) : tasks.length === 0 ? (
+        <Typography 
+          variant="h6" 
+          color="text.secondary" 
+          align="center"
+          sx={{
+            display: 'flex',
+            justifyContent: 'center'
+          }}
+        >
           No tasks yet. Create one using the + button!
         </Typography>
       ) : (
-        tasks.map(task => (
-          <TaskCard
-            key={task.id}
-            task={task}
-            onDelete={handleDeleteTask}
-            onToggleComplete={handleToggleComplete}
-            onUpdate={handleUpdateTask}
-          />
-        ))
+        <Box sx={{
+          width: '100%',
+          columnCount: { xs: 1, sm: 'auto' },
+          columnWidth: { sm: '300px' },
+          columnGap: 2,
+          '& > *': {
+            breakInside: 'avoid',
+            marginBottom: 2,
+            display: 'inline-block',
+            width: '100%',
+            maxWidth: '100%'
+          }
+        }}>
+          {tasks.map(task => (
+            <TaskCard
+              key={task.id}
+              task={task}
+              onDelete={handleDeleteTask}
+              onToggleComplete={handleToggleComplete}
+              onUpdate={handleUpdateTask}
+            />
+          ))}
+        </Box>
       )}
     </Container>
   );

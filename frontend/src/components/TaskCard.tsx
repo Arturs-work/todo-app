@@ -9,9 +9,11 @@ import {
   ListItemText, 
   IconButton,
   TextField,
-  Box
+  Box,
+  Tooltip
 } from '@mui/material';
 import DeleteIcon from '@mui/icons-material/Delete';
+import AddIcon from '@mui/icons-material/Add';
 import { format } from 'date-fns';
 import { Task } from '../types/Task';
 
@@ -25,7 +27,12 @@ interface TaskCardProps {
 const TaskCard: React.FC<TaskCardProps> = ({ task, onDelete, onToggleComplete, onUpdate }) => {
   const [isEditing, setIsEditing] = useState(false);
   const [editedTask, setEditedTask] = useState<Task>(task);
+  const [newItemText, setNewItemText] = useState('');
   const cardRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    setEditedTask(task);
+  }, [task]);
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
@@ -75,6 +82,27 @@ const TaskCard: React.FC<TaskCardProps> = ({ task, onDelete, onToggleComplete, o
     }
   };
 
+  const handleAddItem = () => {
+    if (task.type === 'checklist' && newItemText.trim()) {
+      const newContent = [...(task.content as string[]), newItemText.trim()];
+      const newCompletedItems = [...(task.completedItems || []), false];
+      const updatedTask = { 
+        ...editedTask, 
+        content: newContent,
+        completedItems: newCompletedItems
+      };
+      setEditedTask(updatedTask);
+      onUpdate(updatedTask);
+      setNewItemText('');
+    }
+  };
+
+  const handleKeyPress = (e: React.KeyboardEvent) => {
+    if (e.key === 'Enter') {
+      handleAddItem();
+    }
+  };
+
   return (
     <Card 
       ref={cardRef}
@@ -104,9 +132,11 @@ const TaskCard: React.FC<TaskCardProps> = ({ task, onDelete, onToggleComplete, o
               {task.title}
             </Typography>
           )}
-          <IconButton onClick={() => onDelete(task.id)} size="small">
-            <DeleteIcon />
-          </IconButton>
+          <Tooltip title="Delete task">
+            <IconButton onClick={() => onDelete(task.id)} size="small">
+              <DeleteIcon />
+            </IconButton>
+          </Tooltip>
         </Box>
         
         <Box sx={{ mt: 1 }}>
@@ -115,11 +145,10 @@ const TaskCard: React.FC<TaskCardProps> = ({ task, onDelete, onToggleComplete, o
               <TextField
                 fullWidth
                 multiline
-                rows={4}
                 value={editedTask.content as string}
                 onChange={handleContentChange}
                 variant="outlined"
-                size="small"
+                size="large"
                 onClick={(e) => e.stopPropagation()}
               />
             ) : (
@@ -134,6 +163,7 @@ const TaskCard: React.FC<TaskCardProps> = ({ task, onDelete, onToggleComplete, o
                 <Typography 
                   variant="body1" 
                   color="text.secondary"
+                  sx={{ whiteSpace: 'pre-wrap' }}
                 >
                   {task.content as string}
                 </Typography>
@@ -173,6 +203,31 @@ const TaskCard: React.FC<TaskCardProps> = ({ task, onDelete, onToggleComplete, o
                   </ListItem>
                 );
               })}
+              {isEditing && (
+                <ListItem dense sx={{ px: 0 }}>
+                  <TextField
+                    fullWidth
+                    placeholder="Add new item"
+                    value={newItemText}
+                    onChange={(e) => setNewItemText(e.target.value)}
+                    onKeyPress={handleKeyPress}
+                    variant="standard"
+                    size="small"
+                    onClick={(e) => e.stopPropagation()}
+                    InputProps={{
+                      endAdornment: (
+                        <IconButton 
+                          size="small" 
+                          onClick={handleAddItem}
+                          disabled={!newItemText.trim()}
+                        >
+                          <AddIcon />
+                        </IconButton>
+                      ),
+                    }}
+                  />
+                </ListItem>
+              )}
             </List>
           )}
         </Box>
