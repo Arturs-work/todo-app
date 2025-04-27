@@ -15,7 +15,9 @@
     "@mui/material": "^7.0.2",
     "@emotion/react": "^11.14.0",
     "@emotion/styled": "^11.14.0",
-    "@mui/icons-material": "^7.0.2"
+    "@mui/icons-material": "^7.0.2",
+    "socket.io-client": "^4.8.1",
+    "date-fns": "^4.1.0"
   },
   "devDependencies": {
     "@types/node": "^22.15.2",

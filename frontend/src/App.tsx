@@ -1,5 +1,6 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { ThemeProvider } from './context/ThemeContext';
+import { SocketProvider, useSocket } from './context/SocketContext';
 import GlobalStyle from './styles/GlobalStyle';
 import ThemeToggle from './components/ThemeToggle';
 import TaskCreator from './components/TaskCreator';
@@ -9,15 +10,57 @@ import { Typography, Box } from '@mui/material';
 
 const AppContent = () => {
   const [tasks, setTasks] = useState<Task[]>([]);
+  const { socket, isConnected } = useSocket();
+
+  useEffect(() => {
+    if (!socket) return;
+
+    // Listen for initial tasks to load
+    socket.on('tasks', (initialTasks: Task[]) => {
+      setTasks(initialTasks);
+    });
+
+    // Listen for task creation events
+    socket.on('taskCreated', (newTask: Task) => {
+      setTasks(prevTasks => [...prevTasks, newTask]);
+    });
+
+    // Listen for task update events
+    socket.on('taskUpdated', (updatedTask: Task) => {
+      setTasks(prevTasks => 
+        prevTasks.map(task => 
+          task.id === updatedTask.id ? updatedTask : task
+        )
+      );
+    });
+
+    // Listen for task deletion events
+    socket.on('taskDeleted', (taskId: string) => {
+      setTasks(prevTasks => prevTasks.filter(task => task.id !== taskId));
+    });
+
+    // Clean up event listeners on unmount
+    return () => {
+      socket.off('tasks');
+      socket.off('taskCreated');
+      socket.off('taskUpdated');
+      socket.off('taskDeleted');
+    };
+  }, [socket]);
 
   const handleTaskCreated = (task: Task) => {
-    setTasks([...tasks, task]);
+    if (socket && isConnected) {
+      socket.emit('createTask', task);
+    } else {
+      // Fallback to local state if socket is not connected
+      setTasks([...tasks, task]);
+    }
   };
 
   return (
     <>
       <GlobalStyle />
-      <Box sx={{ minHeight: '100vh', bgcolor: 'background.default' }}>
+      <Box>
         <Box component="header" sx={{ 
           p: 2, 
           display: 'flex', 
@@ -26,7 +69,7 @@ const AppContent = () => {
           bgcolor: 'background.paper',
           boxShadow: 3
         }}>
-          <Typography component="h1">
+          <Typography variant="h6" gutterBottom>
             Todo App
           </Typography>
           <ThemeToggle />
@@ -46,7 +89,9 @@ const AppContent = () => {
 function App() {
   return (
     <ThemeProvider>
-      <AppContent />
+      <SocketProvider>
+        <AppContent />
+      </SocketProvider>
     </ThemeProvider>
   );
 }
