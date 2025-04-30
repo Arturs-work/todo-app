@@ -1,15 +1,11 @@
 import { Sequelize } from 'sequelize';
-import dotenv from 'dotenv';
 
-dotenv.config();
+if (process.env.NODE_ENV !== "production") {
+  import("dotenv").then((dotenv) => dotenv.config());
+}
 
-const sequelize = new Sequelize({
+const sequelize = new Sequelize(process.env.DATABASE_URL!, {
   dialect: 'postgres',
-  host: process.env.DB_HOST || 'db',
-  port: parseInt(process.env.DB_PORT || '5432'),
-  username: process.env.DB_USER || 'postgres',
-  password: process.env.DB_PASSWORD || 'postgres',
-  database: process.env.DB_NAME || 'todo_app',
   logging: process.env.NODE_ENV === 'development' ? console.log : false,
   define: {
     timestamps: true,

@@ -21,3 +21,13 @@ Just another todo app in the making...
    - Frontend: http://localhost:5173
    - Backend API: http://localhost:4000
    - PostgreSQL: db:5432
+
+# Deployment stack
+
+All hosted on Railway (https://railway.com/).
+
+Never used it before, but sounded like a solid option for a small project.
+They have a fairly generous free tier that has enough resources to run this simple app.
+Documentation was also decent and deployment with docker was very quick.
+
+Can be accessed here - https://frontend-production-25b6.up.railway.app/

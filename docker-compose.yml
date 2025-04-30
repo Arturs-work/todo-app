@@ -3,7 +3,7 @@ services:
     container_name: frontend
     build:
       context: ./frontend
-      dockerfile: Dockerfile
+      dockerfile: Dockerfile.dev
     ports:
       - "5173:5173"
     volumes:
@@ -21,7 +21,7 @@ services:
     container_name: backend
     build:
       context: ./backend
-      dockerfile: Dockerfile
+      dockerfile: Dockerfile.dev
     ports:
       - "4000:4000"
     volumes:
@@ -29,7 +29,8 @@ services:
       - /app/node_modules
     environment:
       - NODE_ENV=development
-      - DATABASE_URL=postgresql://postgres:postgres@db:5432/todoapp
+      - FRONTEND_URL=http://localhost:5173
+      - DATABASE_URL=postgresql://postgres:postgres@db:5432/todo_app
       - PORT=4000
     networks:
       - app-network
@@ -57,4 +58,4 @@ networks:
     driver: bridge
 
 volumes:
-  postgres_data: 
+  postgres_data:

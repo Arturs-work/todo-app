@@ -1,19 +1,21 @@
 import express, { Request, Response } from 'express';
 import cors from 'cors';
-import dotenv from 'dotenv';
 import { createServer } from 'http';
 import { Server } from 'socket.io';
 import { testConnection } from './config/sequelize';
 import { syncDatabase } from './models';
 import Task from './models/Task';
+import healthRouter from './routes/health';
 
-dotenv.config();
+if (process.env.NODE_ENV !== "production") {
+  import("dotenv").then((dotenv) => dotenv.config());
+}
 
 const app = express();
 const httpServer = createServer(app);
 const io = new Server(httpServer, {
   cors: {
-    origin: process.env.FRONTEND_URL || 'http://localhost:5173',
+    origin: process.env.FRONTEND_URL,
     methods: ['GET', 'POST', 'PUT', 'DELETE'],
   },
 });
@@ -24,11 +26,15 @@ const port = process.env.PORT || 4000;
 app.use(cors());
 app.use(express.json());
 
+app.use('/health', healthRouter);
+
 io.on('connection', async (socket) => {
   console.log('Client connected:', socket.id);
 
   try {
-    const tasks = await Task.findAll();
+    const tasks = await Task.findAll({
+      order: [['order', 'ASC']]
+    });
     socket.emit('tasks', tasks);
   } catch (error) {
     console.error('Error fetching tasks:', error);
@@ -38,7 +44,18 @@ io.on('connection', async (socket) => {
   // Handle task creation
   socket.on('createTask', async (task) => {
     try {
-      const newTask = await Task.create(task);
+      // Get the current highest order
+      const maxOrderTask = await Task.findOne({
+        order: [['order', 'DESC']]
+      });
+      const nextOrder = maxOrderTask ? maxOrderTask.order + 1 : 0;
+
+      // Create the new task with the next order
+      const newTask = await Task.create({
+        ...task,
+        order: nextOrder
+      });
+      
       io.emit('taskCreated', newTask);
     } catch (error) {
       console.error('Error creating task:', error);
@@ -101,6 +118,29 @@ io.on('connection', async (socket) => {
     } catch (error) {
       console.error('Error toggling task completion:', error);
       socket.emit('error', { message: 'Failed to toggle task completion' });
+    }
+  });
+
+  // Handle task reordering
+  socket.on('reorderTasks', async (taskIds: string[]) => {
+    try {
+      await Promise.all(
+        taskIds.map(async (taskId, index) => {
+          await Task.update(
+            { order: index },
+            { where: { id: taskId } }
+          );
+        })
+      );
+
+      const tasks = await Task.findAll({
+        order: [['order', 'ASC']]
+      });
+
+      io.emit('tasks', tasks);
+    } catch (error) {
+      console.error('Error reordering tasks:', error);
+      socket.emit('error', { message: 'Failed to reorder tasks' });
     }
   });
 

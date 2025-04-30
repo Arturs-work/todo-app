@@ -8,6 +8,8 @@ class Task extends Model {
   public content!: string | string[];
   public createdAt!: Date;
   public completedItems?: boolean[];
+  public order!: number;
+  public pinned!: boolean;
 }
 
 Task.init(
@@ -57,6 +59,16 @@ Task.init(
       set(value: boolean[] | undefined) {
         this.setDataValue('completedItems', value ? JSON.stringify(value) : null);
       },
+    },
+    order: {
+      type: DataTypes.INTEGER,
+      allowNull: false,
+      defaultValue: 0
+    },
+    pinned: {
+      type: DataTypes.BOOLEAN,
+      allowNull: false,
+      defaultValue: false
     }
   },
   {

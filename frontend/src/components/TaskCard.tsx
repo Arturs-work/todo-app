@@ -14,6 +14,7 @@ import {
 } from '@mui/material';
 import DeleteIcon from '@mui/icons-material/Delete';
 import AddIcon from '@mui/icons-material/Add';
+import PushPinIcon from '@mui/icons-material/PushPin';
 import { format } from 'date-fns';
 import { Task } from '../types/Task';
 
@@ -110,6 +111,7 @@ const TaskCard: React.FC<TaskCardProps> = ({ task, onDelete, onToggleComplete, o
         mb: 2,
         display: 'flex', 
         flexDirection: 'column',
+        background: task.pinned ? 'linear-gradient(45deg, rgba(255,0,0,0.05), rgba(255,0,0,0.02))' : 'none'
       }}
     >
       <CardContent sx={{ display: 'flex', flexDirection: 'column' }}>
@@ -132,11 +134,22 @@ const TaskCard: React.FC<TaskCardProps> = ({ task, onDelete, onToggleComplete, o
               {task.title}
             </Typography>
           )}
-          <Tooltip title="Delete task">
-            <IconButton onClick={() => onDelete(task.id)} size="small">
-              <DeleteIcon />
-            </IconButton>
-          </Tooltip>
+          <Box sx={{ display: 'flex', gap: 1 }}>
+            <Tooltip title={task.pinned ? "Unpin task" : "Pin task"}>
+              <IconButton 
+                onClick={() => onUpdate({ ...task, pinned: !task.pinned })}
+                size="small"
+                color={task.pinned ? "error" : "default"}
+              >
+                <PushPinIcon />
+              </IconButton>
+            </Tooltip>
+            <Tooltip title="Delete task">
+              <IconButton onClick={() => onDelete(task.id)} size="small">
+                <DeleteIcon />
+              </IconButton>
+            </Tooltip>
+          </Box>
         </Box>
         
         <Box sx={{ mt: 1 }}>

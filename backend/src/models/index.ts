@@ -9,7 +9,7 @@ const models = {
 // Sync database
 export const syncDatabase = async (force = false) => {
   try {
-    await sequelize.sync({ force });
+    await sequelize.sync({ force: force });
     console.log('Database synchronized successfully');
     return true;
   } catch (error) {

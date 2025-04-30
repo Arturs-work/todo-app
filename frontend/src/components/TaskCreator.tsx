@@ -26,6 +26,7 @@ interface TaskCreatorProps {
 
 const TaskCreator: React.FC<TaskCreatorProps> = ({ onTaskCreated }) => {
   const [open, setOpen] = useState(false);
+  const [dialOpen, setDialOpen] = useState(false);
   const [taskType, setTaskType] = useState<TaskType | null>(null);
   const [title, setTitle] = useState('');
   const [content, setContent] = useState('');
@@ -86,6 +87,10 @@ const TaskCreator: React.FC<TaskCreatorProps> = ({ onTaskCreated }) => {
         ariaLabel="Add new task"
         sx={{ position: 'fixed', bottom: 16, right: 16 }}
         icon={<SpeedDialIcon openIcon={<EditIcon />} />}
+        open={dialOpen}
+        onClick={() => setDialOpen(prev => !prev)}
+        onMouseEnter={() => {}}
+        onMouseLeave={() => {}}
       >
         {actions.map((action) => (
           <SpeedDialAction

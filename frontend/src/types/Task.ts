@@ -7,4 +7,5 @@ export interface Task {
   content: string | string[];
   createdAt: Date;
   completedItems?: boolean[];
+  pinned?: boolean;
 } 
