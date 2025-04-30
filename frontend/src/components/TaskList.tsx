@@ -22,6 +22,8 @@ import { useSocket } from '../context/SocketContext';
 interface TaskListProps {
   tasks: Task[];
   onTasksChange: (tasks: Task[]) => void;
+  onTaskUpdated: (task: Task) => void;
+  onTaskDeleted: (taskId: string) => void;
 }
 
 function SortableTask({ task, onDelete, onToggleComplete, onUpdate }: {
@@ -76,7 +78,12 @@ function SortableTask({ task, onDelete, onToggleComplete, onUpdate }: {
   );
 }
 
-const TaskList: React.FC<TaskListProps> = ({ tasks, onTasksChange }) => {
+const TaskList: React.FC<TaskListProps> = ({ 
+  tasks, 
+  onTasksChange,
+  onTaskUpdated,
+  onTaskDeleted
+}) => {
   const { socket, isConnected } = useSocket();
   const [isLoading, setIsLoading] = useState(true);
 
@@ -121,42 +128,27 @@ const TaskList: React.FC<TaskListProps> = ({ tasks, onTasksChange }) => {
   };
 
   const handleDeleteTask = (id: string) => {
-    if (socket && isConnected) {
-      socket.emit('deleteTask', id);
-    } else {
-      const updatedTasks = tasks.filter(task => task.id !== id);
-      onTasksChange(updatedTasks);
-    }
+    onTaskDeleted(id);
   };
 
   const handleToggleComplete = (id: string, itemIndex?: number) => {
-    if (socket && isConnected) {
-      socket.emit('toggleComplete', id, itemIndex);
+    const task = tasks.find(t => t.id === id);
+    if (!task) return;
+
+    let updatedTask: Task;
+    if (task.type === 'checklist' && typeof itemIndex === 'number' && task.completedItems) {
+      const newCompletedItems = [...task.completedItems];
+      newCompletedItems[itemIndex] = !newCompletedItems[itemIndex];
+      updatedTask = { ...task, completedItems: newCompletedItems };
     } else {
-      const updatedTasks = tasks.map(task => {
-        if (task.id !== id) return task;
-        
-        if (task.type === 'checklist' && typeof itemIndex === 'number' && task.completedItems) {
-          const newCompletedItems = [...task.completedItems];
-          newCompletedItems[itemIndex] = !newCompletedItems[itemIndex];
-          return { ...task, completedItems: newCompletedItems };
-        }
-        
-        return task;
-      });
-      onTasksChange(updatedTasks);
+      updatedTask = { ...task, completed: !task.completed };
     }
+
+    onTaskUpdated(updatedTask);
   };
 
   const handleUpdateTask = (updatedTask: Task) => {
-    if (socket && isConnected) {
-      socket.emit('updateTask', updatedTask);
-    } else {
-      const updatedTasks = tasks.map(task => 
-        task.id === updatedTask.id ? updatedTask : task
-      );
-      onTasksChange(updatedTasks);
-    }
+    onTaskUpdated(updatedTask);
   };
 
   return (
@@ -204,17 +196,32 @@ const TaskList: React.FC<TaskListProps> = ({ tasks, onTasksChange }) => {
               sx={{
                 width: '100%',
                 display: 'grid',
-                gridTemplateColumns: 'repeat(4, 1fr)',
+                gridTemplateColumns: {
+                  xs: '1fr',
+                  sm: 'repeat(2, 1fr)',
+                  md: 'repeat(3, 1fr)',
+                  lg: 'repeat(4, 1fr)'
+                },
                 gridAutoFlow: 'dense',
-                gap: 2,
+                gap: {
+                  xs: 1,
+                  sm: 2
+                },
                 maxWidth: '1400px',
                 margin: '0 auto',
+                padding: {
+                  xs: 1,
+                  sm: 2
+                },
                 '& > *': {
                   width: '100%',
                   maxWidth: '100%',
                   gridColumn: 'span 1',
                   gridRow: 'span 1',
-                  minHeight: '100px'
+                  minHeight: {
+                    xs: '80px',
+                    sm: '100px'
+                  }
                 }
               }}
             >
