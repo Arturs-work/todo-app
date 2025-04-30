@@ -19,7 +19,7 @@ export const SocketProvider: React.FC<{ children: React.ReactNode }> = ({ childr
 
   useEffect(() => {
     // Connect to the backend socket server
-    const socketInstance = io(import.meta.env.VITE_API_URL || 'http://localhost:4000');
+    const socketInstance = io(import.meta.env.VITE_API_URL);
 
     // Set up event listeners
     socketInstance.on('connect', () => {
