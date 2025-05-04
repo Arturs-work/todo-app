@@ -20,4 +20,4 @@ COPY --from=builder /app/dist ./dist
 ENV NODE_ENV=production
 EXPOSE 4000
 
-CMD ["node", "dist/index.js"]
+CMD ["node", "dist/server.js"]

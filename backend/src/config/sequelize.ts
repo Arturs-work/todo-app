@@ -32,4 +32,40 @@ export const testConnection = async () => {
   }
 };
 
+// Sync database
+export const syncDatabase = async (force = false) => {
+  try {
+    await sequelize.sync({ force: force });
+    console.log('Database synchronized successfully');
+    return true;
+  } catch (error) {
+    console.error('Error synchronizing database:', error);
+    return false;
+  }
+};
+
+// Initialize database
+export const initializeDatabase = async () => {
+  try {
+    // Test connection
+    const connectionResult = await testConnection();
+    if (!connectionResult.success) {
+      console.error('Database connection failed:', connectionResult.error);
+      return;
+    }
+    
+    // Sync database and create tables if needed
+    const forceSync = process.env.FORCE_SYNC === 'true';
+    const syncResult = await syncDatabase(forceSync);
+    if (!syncResult) {
+      console.error('Database synchronization failed');
+      return;
+    }
+    
+    console.log('Database initialized successfully');
+  } catch (error) {
+    console.error('Error initializing database:', error);
+  }
+};
+
 export default sequelize; 
