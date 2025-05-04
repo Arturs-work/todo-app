@@ -16,6 +16,9 @@ import {
 import { Task } from '../types/Task';
 import { useSocket } from '../context/SocketContext';
 import SortableTask from './SortableTask';
+import AlertMessage from './Alert';
+
+const OFFLINE_MESSAGE = "It looks like you're offline. You can keep editing the notes and we will try to sync them when you're back online.";
 
 interface TaskListProps {
   tasks: Task[];
@@ -29,7 +32,7 @@ const TaskList: React.FC<TaskListProps> = ({
   onTasksChange,
   onTaskUpdated,
   onTaskDeleted,
-}) => {
+}: TaskListProps) => {
   const { socket, isConnected } = useSocket();
   const [isLoading, setIsLoading] = useState(true);
 
@@ -54,13 +57,13 @@ const TaskList: React.FC<TaskListProps> = ({
 
     if (!over) return;
 
-    const oldIndex = tasks.findIndex(task => task.id === active.id);
-    const newIndex = tasks.some(task => task.id === over.id)
-      ? tasks.findIndex(task => task.id === over.id)
+    const oldIndex = tasks.findIndex((task: Task) => task.id === active.id);
+    const newIndex = tasks.some((task: Task) => task.id === over.id)
+      ? tasks.findIndex((task: Task) => task.id === over.id)
       : tasks.length;
 
     const newTasks = arrayMove(tasks, oldIndex, newIndex);
-    const updatedTasks = newTasks.map((task, index) => ({
+    const updatedTasks = newTasks.map((task: Task, index: number) => ({
       ...task,
       order: index,
     }));
@@ -68,8 +71,8 @@ const TaskList: React.FC<TaskListProps> = ({
     onTasksChange(updatedTasks);
 
     // Only update tasks that changed position
-    updatedTasks.forEach(task => {
-      const originalTask = tasks.find(t => t.id === task.id);
+    updatedTasks.forEach((task: Task) => {
+      const originalTask = tasks.find((t: Task) => t.id === task.id);
       if (originalTask?.order !== task.order) {
         onTaskUpdated(task);
       }
@@ -81,7 +84,7 @@ const TaskList: React.FC<TaskListProps> = ({
   };
 
   const handleToggleComplete = (id: string, itemIndex?: number) => {
-    const task = tasks.find(t => t.id === id);
+    const task = tasks.find((t: Task) => t.id === id);
     if (!task) return;
 
     let updatedTask: Task;
@@ -120,6 +123,7 @@ const TaskList: React.FC<TaskListProps> = ({
         color="text.secondary" 
         align="center"
         sx={{
+          mt: 10,
           display: 'flex',
           justifyContent: 'center'
         }}
@@ -130,48 +134,54 @@ const TaskList: React.FC<TaskListProps> = ({
   }
 
   return (
-    <DndContext
-      sensors={sensors}
-      collisionDetection={closestCenter}
-      onDragEnd={handleDragEnd}
-    >
-      <SortableContext
-        items={tasks.map(task => task.id)}
-        strategy={verticalListSortingStrategy}
+    <>
+      {socket && !isConnected &&
+        <AlertMessage
+          type="error"
+          message={OFFLINE_MESSAGE}
+        />}
+      <DndContext
+        sensors={sensors}
+        collisionDetection={closestCenter}
+        onDragEnd={handleDragEnd}
       >
-        <Box
-          sx={{
-            width: '100%',
-            display: 'grid',
-            gridTemplateColumns: {
-              xs: '1fr',
-              sm: 'repeat(2, 1fr)',
-              md: 'repeat(3, 1fr)',
-              lg: 'repeat(4, 1fr)'
-            },
-            gridAutoFlow: 'dense',
-            gap: {
-              xs: 1,
-              sm: 2
-            },
-            maxWidth: '1400px',
-            margin: '0 auto',
-            padding: {
-              xs: 1,
-              sm: 2
-            },
-            '& > *': {
-              width: '100%',
-              maxWidth: '100%',
-              gridColumn: 'span 1',
-              gridRow: 'span 1',
-              minHeight: {
-                xs: '80px',
-                sm: '100px'
-              }
-            }
-          }}
+        <SortableContext
+          items={tasks.map(task => task.id)}
+          strategy={verticalListSortingStrategy}
         >
+          <Box
+            sx={{
+              width: '100%',
+              display: 'grid',
+              gridTemplateColumns: {
+                xs: '1fr',
+                sm: 'repeat(2, 1fr)',
+                md: 'repeat(3, 1fr)',
+                lg: 'repeat(4, 1fr)'
+              },
+              gridAutoFlow: 'dense',
+              gap: {
+                xs: 1,
+                sm: 2
+              },
+              maxWidth: '1400px',
+              margin: '0 auto',
+              padding: {
+                xs: 2,
+                sm: 2
+              },
+              '& > *': {
+                width: '100%',
+                maxWidth: '100%',
+                gridColumn: 'span 1',
+                gridRow: 'span 1',
+                minHeight: {
+                  xs: '80px',
+                  sm: '100px'
+                }
+              }
+            }}
+          >
           {tasks.map(task => (
             <SortableTask
               key={task.id}
@@ -184,6 +194,7 @@ const TaskList: React.FC<TaskListProps> = ({
         </Box>
       </SortableContext>
     </DndContext>
+    </>
   );
 };
 

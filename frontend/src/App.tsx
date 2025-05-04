@@ -23,7 +23,7 @@ const AppContent = () => {
     delete: []
   });
 
-  const { socket, isConnected, currentBoardId, joinBoard, createTask, updateTask, deleteTask } = useSocket();
+  const { socket, isConnected, currentBoardId, joinBoard } = useSocket();
 
   // Get boardId from URL or generate a new one
   const getBoardId = () => {
@@ -103,11 +103,13 @@ const AppContent = () => {
 
     // Listen for task update events
     socket.on('taskUpdated', (updatedTask: Task) => {
-      setTasks(prevTasks => 
-        prevTasks.map(task => 
+      setTasks(prevTasks => {
+        const newTasks = prevTasks.map(task => 
           task.id === updatedTask.id ? updatedTask : task
         )
-      );
+
+        return newTasks.sort((a, b) => a.order - b.order);
+    });
     });
 
     // Listen for task deletion events
@@ -178,7 +180,7 @@ const AppContent = () => {
           boxShadow: 3
         }}>
           <Typography variant="h6" gutterBottom>
-            Todo App {!isConnected && '(Offline)'}
+            Todo App
           </Typography>
           <ThemeToggle />
         </Box>
