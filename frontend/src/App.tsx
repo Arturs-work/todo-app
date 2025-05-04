@@ -3,10 +3,11 @@ import { ThemeProvider } from './context/ThemeContext';
 import { SocketProvider, useSocket } from './context/SocketContext';
 import GlobalStyle from './styles/GlobalStyle';
 import ThemeToggle from './components/ThemeToggle';
-import TaskCreator from './components/TaskCreator';
+import TaskForm from './components/TaskForm';
 import TaskList from './components/TaskList';
 import { Task } from './types/Task';
 import { Typography, Box } from '@mui/material';
+import { v4 as uuidv4 } from 'uuid';
 
 const STORAGE_KEY = 'todo-app-tasks';
 
@@ -21,7 +22,31 @@ const AppContent = () => {
     update: [],
     delete: []
   });
-  const { socket, isConnected } = useSocket();
+
+  const { socket, isConnected, currentBoardId, joinBoard, createTask, updateTask, deleteTask } = useSocket();
+
+  // Get boardId from URL or generate a new one
+  const getBoardId = () => {
+    const pathParts = window.location.pathname.split('/');
+    const boardId = pathParts[1];
+    
+    if (!boardId) {
+      const newBoardId = uuidv4();
+      window.history.pushState({}, '', `/${newBoardId}`);
+      return newBoardId;
+    }
+    
+    return boardId;
+  };
+
+  const boardId = getBoardId();
+
+  useEffect(() => {
+    // Join the board room when the boardId changes
+    if (boardId !== currentBoardId) {
+      joinBoard(boardId);
+    }
+  }, [boardId, currentBoardId, joinBoard]);
 
   // Load tasks from localStorage on initial mount
   useEffect(() => {
@@ -101,20 +126,20 @@ const AppContent = () => {
 
   const handleTaskCreated = (task: Task) => {
     if (socket && isConnected) {
-      socket.emit('createTask', task);
+      socket.emit('createTask', { ...task, boardId });
     } else {
       // Add to local state and pending changes
       setTasks(prevTasks => [...prevTasks, task]);
       setPendingChanges(prev => ({
         ...prev,
-        create: [...prev.create, task]
+        create: [...prev.create, { ...task, boardId }]
       }));
     }
   };
 
   const handleTaskUpdated = (task: Task) => {
     if (socket && isConnected) {
-      socket.emit('updateTask', task);
+      socket.emit('updateTask', { ...task, boardId });
     } else {
       // Update local state and add to pending changes
       setTasks(prevTasks => 
@@ -122,14 +147,14 @@ const AppContent = () => {
       );
       setPendingChanges(prev => ({
         ...prev,
-        update: [...prev.update, task]
+        update: [...prev.update, { ...task, boardId }]
       }));
     }
   };
 
   const handleTaskDeleted = (taskId: string) => {
     if (socket && isConnected) {
-      socket.emit('deleteTask', taskId);
+      socket.emit('deleteTask', { id: taskId, boardId });
     } else {
       // Update local state and add to pending changes
       setTasks(prevTasks => prevTasks.filter(t => t.id !== taskId));
@@ -165,7 +190,7 @@ const AppContent = () => {
           onTaskDeleted={handleTaskDeleted}
         />
         
-        <TaskCreator onTaskCreated={handleTaskCreated} />
+        <TaskForm onTaskCreated={handleTaskCreated} />
       </Box>
     </>
   );

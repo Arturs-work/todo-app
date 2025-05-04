@@ -1,23 +1,21 @@
 import React, { useState, useEffect } from 'react';
-import { Container, Typography, Box, CircularProgress } from '@mui/material';
+import { Typography, Box, CircularProgress } from '@mui/material';
 import {
   DndContext,
   closestCenter,
   PointerSensor,
   useSensor,
   useSensors,
-  DragEndEvent
+  DragEndEvent,
 } from '@dnd-kit/core';
 import {
   arrayMove,
   SortableContext,
-  verticalListSortingStrategy
+  verticalListSortingStrategy,
 } from '@dnd-kit/sortable';
-import { useSortable } from '@dnd-kit/sortable';
-import { CSS } from '@dnd-kit/utilities';
-import TaskCard from './TaskCard';
 import { Task } from '../types/Task';
 import { useSocket } from '../context/SocketContext';
+import SortableTask from './SortableTask';
 
 interface TaskListProps {
   tasks: Task[];
@@ -26,63 +24,11 @@ interface TaskListProps {
   onTaskDeleted: (taskId: string) => void;
 }
 
-function SortableTask({ task, onDelete, onToggleComplete, onUpdate }: {
-  task: Task;
-  onDelete: (id: string) => void;
-  onToggleComplete: (id: string, itemIndex?: number) => void;
-  onUpdate: (task: Task) => void;
-}) {
-  const {
-    attributes,
-    listeners,
-    setNodeRef,
-    transform,
-    transition,
-    isDragging
-  } = useSortable({ id: task.id });
-
-  const style = {
-    transform: CSS.Transform.toString(transform),
-    transition,
-    touchAction: 'none',
-    transformOrigin: '0 0',
-    opacity: isDragging ? 0.5 : 1,
-    zIndex: isDragging ? 1 : 0,
-    cursor: 'grab',
-    '&:active': {
-      cursor: 'grabbing'
-    },
-    height: '100%',
-    display: 'flex',
-    flexDirection: 'column'
-  };
-
-  return (
-    <div 
-      ref={setNodeRef} 
-      style={style} 
-      {...attributes}
-      {...listeners}
-      onClick={(e) => {
-        if (e.defaultPrevented) return;
-        e.stopPropagation();
-      }}
-    >
-      <TaskCard
-        task={task}
-        onDelete={onDelete}
-        onToggleComplete={onToggleComplete}
-        onUpdate={onUpdate}
-      />
-    </div>
-  );
-}
-
 const TaskList: React.FC<TaskListProps> = ({ 
   tasks, 
   onTasksChange,
   onTaskUpdated,
-  onTaskDeleted
+  onTaskDeleted,
 }) => {
   const { socket, isConnected } = useSocket();
   const [isLoading, setIsLoading] = useState(true);
@@ -106,25 +52,28 @@ const TaskList: React.FC<TaskListProps> = ({
   const handleDragEnd = (event: DragEndEvent) => {
     const { active, over } = event;
 
-    if (over) {
-      const oldIndex = tasks.findIndex(task => task.id === active.id);
-      let newIndex;
+    if (!over) return;
 
-      // If dropped on another task
-      if (tasks.some(task => task.id === over.id)) {
-        newIndex = tasks.findIndex(task => task.id === over.id);
-      } else {
-        // If dropped in empty space, add to the end
-        newIndex = tasks.length;
+    const oldIndex = tasks.findIndex(task => task.id === active.id);
+    const newIndex = tasks.some(task => task.id === over.id)
+      ? tasks.findIndex(task => task.id === over.id)
+      : tasks.length;
+
+    const newTasks = arrayMove(tasks, oldIndex, newIndex);
+    const updatedTasks = newTasks.map((task, index) => ({
+      ...task,
+      order: index,
+    }));
+
+    onTasksChange(updatedTasks);
+
+    // Only update tasks that changed position
+    updatedTasks.forEach(task => {
+      const originalTask = tasks.find(t => t.id === task.id);
+      if (originalTask?.order !== task.order) {
+        onTaskUpdated(task);
       }
-
-      const newTasks = arrayMove(tasks, oldIndex, newIndex);
-      onTasksChange(newTasks);
-
-      if (socket && isConnected) {
-        socket.emit('reorderTasks', newTasks.map(task => String(task.id)));
-      }
-    }
+    });
   };
 
   const handleDeleteTask = (id: string) => {
@@ -151,94 +100,90 @@ const TaskList: React.FC<TaskListProps> = ({
     onTaskUpdated(updatedTask);
   };
 
+  if (isLoading) {
+    return (
+      <Box sx={{ 
+        display: 'flex', 
+        justifyContent: 'center', 
+        alignItems: 'center',
+        minHeight: '200px'
+      }}>
+        <CircularProgress />
+      </Box>
+    );
+  }
+
+  if (tasks.length === 0) {
+    return (
+      <Typography 
+        variant="h6" 
+        color="text.secondary" 
+        align="center"
+        sx={{
+          display: 'flex',
+          justifyContent: 'center'
+        }}
+      >
+        No tasks yet. Create one using the + button!
+      </Typography>
+    );
+  }
+
   return (
-    <Container 
-      maxWidth="xl" 
-      sx={{
-        mt: 4,
-        display: 'flex',
-        flexDirection: 'column',
-        alignItems: 'center'
-      }}
+    <DndContext
+      sensors={sensors}
+      collisionDetection={closestCenter}
+      onDragEnd={handleDragEnd}
     >
-      {isLoading ? (
-        <Box sx={{ 
-          display: 'flex', 
-          justifyContent: 'center', 
-          alignItems: 'center',
-          minHeight: '200px'
-        }}>
-          <CircularProgress />
-        </Box>
-      ) : tasks.length === 0 ? (
-        <Typography 
-          variant="h6" 
-          color="text.secondary" 
-          align="center"
+      <SortableContext
+        items={tasks.map(task => task.id)}
+        strategy={verticalListSortingStrategy}
+      >
+        <Box
           sx={{
-            display: 'flex',
-            justifyContent: 'center'
+            width: '100%',
+            display: 'grid',
+            gridTemplateColumns: {
+              xs: '1fr',
+              sm: 'repeat(2, 1fr)',
+              md: 'repeat(3, 1fr)',
+              lg: 'repeat(4, 1fr)'
+            },
+            gridAutoFlow: 'dense',
+            gap: {
+              xs: 1,
+              sm: 2
+            },
+            maxWidth: '1400px',
+            margin: '0 auto',
+            padding: {
+              xs: 1,
+              sm: 2
+            },
+            '& > *': {
+              width: '100%',
+              maxWidth: '100%',
+              gridColumn: 'span 1',
+              gridRow: 'span 1',
+              minHeight: {
+                xs: '80px',
+                sm: '100px'
+              }
+            }
           }}
         >
-          No tasks yet. Create one using the + button!
-        </Typography>
-      ) : (
-        <DndContext
-          sensors={sensors}
-          collisionDetection={closestCenter}
-          onDragEnd={handleDragEnd}
-        >
-          <SortableContext
-            items={tasks.map(task => task.id)}
-            strategy={verticalListSortingStrategy}
-          >
-            <Box
-              sx={{
-                width: '100%',
-                display: 'grid',
-                gridTemplateColumns: {
-                  xs: '1fr',
-                  sm: 'repeat(2, 1fr)',
-                  md: 'repeat(3, 1fr)',
-                  lg: 'repeat(4, 1fr)'
-                },
-                gridAutoFlow: 'dense',
-                gap: {
-                  xs: 1,
-                  sm: 2
-                },
-                maxWidth: '1400px',
-                margin: '0 auto',
-                padding: {
-                  xs: 1,
-                  sm: 2
-                },
-                '& > *': {
-                  width: '100%',
-                  maxWidth: '100%',
-                  gridColumn: 'span 1',
-                  gridRow: 'span 1',
-                  minHeight: {
-                    xs: '80px',
-                    sm: '100px'
-                  }
-                }
-              }}
-            >
-              {tasks.map(task => (
-                <SortableTask
-                  key={task.id}
-                  task={task}
-                  onDelete={handleDeleteTask}
-                  onToggleComplete={handleToggleComplete}
-                  onUpdate={handleUpdateTask}
-                />
-              ))}
-            </Box>
-          </SortableContext>
-        </DndContext>
-      )}
-    </Container>
+          {tasks.map(task => (
+            <SortableTask
+              key={task.id}
+              task={task}
+              onDelete={handleDeleteTask}
+              onToggleComplete={handleToggleComplete}
+              onUpdate={handleUpdateTask}
+            />
+          ))}
+        </Box>
+      </SortableContext>
+    </DndContext>
   );
 };
 

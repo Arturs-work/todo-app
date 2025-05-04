@@ -4,6 +4,7 @@ import { io, Socket } from 'socket.io-client';
 interface SocketContextType {
   socket: Socket | null;
   isConnected: boolean;
+  joinBoard: (boardId: string) => void;
 }
 
 const SocketContext = createContext<SocketContextType>({
@@ -16,6 +17,14 @@ export const useSocket = () => useContext(SocketContext);
 export const SocketProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [socket, setSocket] = useState<Socket | null>(null);
   const [isConnected, setIsConnected] = useState(false);
+  const [currentBoardId, setCurrentBoardId] = useState('default');
+
+  const joinBoard = (boardId: string) => {
+    if (socket) {
+      socket.emit('joinBoard', boardId);
+      setCurrentBoardId(boardId);
+    }
+  };
 
   useEffect(() => {
     // Connect to the backend socket server
@@ -25,6 +34,10 @@ export const SocketProvider: React.FC<{ children: React.ReactNode }> = ({ childr
     socketInstance.on('connect', () => {
       console.log('Connected to socket server');
       setIsConnected(true);
+
+      if (currentBoardId) {
+        joinBoard(currentBoardId);
+      }
     });
 
     socketInstance.on('disconnect', () => {
@@ -44,7 +57,7 @@ export const SocketProvider: React.FC<{ children: React.ReactNode }> = ({ childr
   }, []);
 
   return (
-    <SocketContext.Provider value={{ socket, isConnected }}>
+    <SocketContext.Provider value={{ socket, isConnected, joinBoard }}>
       {children}
     </SocketContext.Provider>
   );

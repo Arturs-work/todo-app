@@ -1,22 +1,31 @@
 import { Model, DataTypes } from 'sequelize';
 import sequelize from '../config/sequelize';
 
+export type TaskType = 'text' | 'checklist';
+
 class Task extends Model {
-  public id!: string;
+  public id!: number;
+  public type!: TaskType;
   public title!: string;
-  public type!: 'text' | 'checklist';
   public content!: string | string[];
-  public createdAt!: Date;
   public completedItems?: boolean[];
   public order!: number;
+  public boardId!: string;
   public pinned!: boolean;
+  public readonly createdAt!: Date;
+  public readonly updatedAt!: Date;
 }
 
 Task.init(
   {
     id: {
-      type: DataTypes.STRING,
+      type: DataTypes.UUID,
+      defaultValue: DataTypes.UUIDV4,
       primaryKey: true,
+    },
+    type: {
+      type: DataTypes.ENUM('text', 'checklist'),
+      allowNull: false,
     },
     title: {
       type: DataTypes.STRING,
@@ -24,10 +33,6 @@ Task.init(
       validate: {
         len: [1, 1000],
       },
-    },
-    type: {
-      type: DataTypes.ENUM('text', 'checklist'),
-      allowNull: false,
     },
     content: {
       type: DataTypes.TEXT,
@@ -60,21 +65,24 @@ Task.init(
         this.setDataValue('completedItems', value ? JSON.stringify(value) : null);
       },
     },
+    pinned: {
+      type: DataTypes.BOOLEAN,
+      defaultValue: false,
+    },
     order: {
       type: DataTypes.INTEGER,
       allowNull: false,
       defaultValue: 0
     },
-    pinned: {
-      type: DataTypes.BOOLEAN,
+    boardId: {
+      type: DataTypes.UUID,
+      defaultValue: DataTypes.UUIDV4,
       allowNull: false,
-      defaultValue: false
     }
   },
   {
     sequelize,
-    modelName: 'Task',
-    timestamps: true,
+    modelName: 'Task'
   }
 );
 

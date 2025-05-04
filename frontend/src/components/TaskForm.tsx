@@ -62,7 +62,6 @@ const TaskCreator: React.FC<TaskCreatorProps> = ({ onTaskCreated }) => {
     if (!taskType || !title) return;
 
     const newTask: Task = {
-      id: Date.now().toString(),
       type: taskType,
       title,
       content: taskType === 'text' ? content : checklistItems,

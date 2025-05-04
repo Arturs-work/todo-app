@@ -5,8 +5,8 @@ import { lightTheme, darkTheme, ThemeMode, ThemeContextType } from '../hooks/use
 
 export const ThemeContext = createContext<ThemeContextType>({
   mode: 'light',
-  toggleColorMode: () => {},
   theme: lightTheme,
+  toggleColorMode: () => {},
 });
 
 interface ThemeProviderProps {
