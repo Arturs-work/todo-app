@@ -30,7 +30,7 @@ Never used it before, but sounded like a solid option for a small project.
 They have a fairly generous free tier that has enough resources to run this simple app.
 Documentation was also decent and deployment with docker was very quick.
 
-Can be accessed here - https://frontend-production-25b6.up.railway.app/
+Can be accessed here - https://todo-25b6.up.railway.app/ef6226ca-2d40-4901-bbc1-8db9ef827643
 
 # User stories that were implemented in the time I had:
 
@@ -46,9 +46,9 @@ Can be accessed here - https://frontend-production-25b6.up.railway.app/
 9. I as a user can remove the tasks so they dont clutter the list
 10. I as a user can choose between creating two different types of todos - list with checkboxes and free type text with title and content
 11. I as a user can use this on mobile phone
+12. As a user I can create multiple boards and share it with someone using unique link. Users with the same link will see the real-time updates only on the board they are on.
 
 # Future improvements:
-1. Improve drag and drop behaviour to be a bit less flaky
-2. Improve the grid view to be more consitent with different size items
-3. Create a custom url sharing functionality - got most of the way there, but didnt have time to fully finish
-4. Clean the codebase up a bit more - split more in to reusable parts for easier maintenance
+1. Expand the task creation functionality to allow adding sub tasks
+2. Add a search functionality and with ability to order by certain criteria
+3. Adding an indicator to see when someone else is editing the task so users can coloborate more effectively
