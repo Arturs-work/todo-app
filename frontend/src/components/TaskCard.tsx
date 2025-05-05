@@ -108,14 +108,25 @@ const TaskCard: React.FC<TaskCardProps> = ({ task, onDelete, onToggleComplete, o
     <Card 
       ref={cardRef}
       sx={{ 
-        mb: 2,
+        mb: 1,
+        height: '100%',
         display: 'flex', 
         flexDirection: 'column',
+        wordBreak: 'break-word',
+        overflowWrap: 'break-word',
+        whiteSpace: 'normal',
         background: task.pinned ? 'linear-gradient(45deg, rgba(255,0,0,0.05), rgba(255,0,0,0.02))' : 'none'
       }}
     >
-      <CardContent sx={{ display: 'flex', flexDirection: 'column' }}>
-        <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+      <CardContent sx={{
+        display: 'flex',
+        flexDirection: 'column'
+      }}>
+        <Box sx={{
+          display: 'flex',
+          justifyContent: 'space-between',
+          alignItems: 'center'
+        }}>
           {isEditing ? (
             <TextField
               autoFocus
@@ -234,7 +245,7 @@ const TaskCard: React.FC<TaskCardProps> = ({ task, onDelete, onToggleComplete, o
                           onClick={handleAddItem}
                           disabled={!newItemText.trim()}
                         >
-                          <AddIcon />
+                        <AddIcon />
                         </IconButton>
                       ),
                     }}

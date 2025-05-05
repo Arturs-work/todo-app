@@ -9,6 +9,9 @@ import {
   DragEndEvent,
 } from '@dnd-kit/core';
 import {
+  restrictToWindowEdges,
+} from '@dnd-kit/modifiers';
+import {
   arrayMove,
   SortableContext,
   verticalListSortingStrategy,
@@ -144,6 +147,7 @@ const TaskList: React.FC<TaskListProps> = ({
         sensors={sensors}
         collisionDetection={closestCenter}
         onDragEnd={handleDragEnd}
+        modifiers={[restrictToWindowEdges]}
       >
         <SortableContext
           items={tasks.map(task => task.id)}
