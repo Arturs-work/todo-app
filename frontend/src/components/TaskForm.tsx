@@ -24,7 +24,7 @@ interface TaskCreatorProps {
   onTaskCreated: (task: Task) => void;
 }
 
-const TaskCreator: React.FC<TaskCreatorProps> = ({ onTaskCreated }) => {
+const TaskCreator: React.FC<TaskCreatorProps> = ({ onTaskCreated }: TaskCreatorProps) => {
   const [open, setOpen] = useState(false);
   const [dialOpen, setDialOpen] = useState(false);
   const [taskType, setTaskType] = useState<TaskType | null>(null);

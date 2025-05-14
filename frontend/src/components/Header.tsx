@@ -2,7 +2,7 @@ import React from 'react';
 import { Typography, Box } from '@mui/material';
 import ThemeToggle from './ThemeToggle';
 
-const Header = () => (
+const Header: React.FC = () => (
   <Box component="header" sx={{
     p: 2,
     display: 'flex',

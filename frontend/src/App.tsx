@@ -18,7 +18,7 @@ const AppContent = () => {
       <GlobalStyle />
       <Box>
         <Header />
-        <TaskList 
+        <TaskList
           tasks={tasks}
           onTasksChange={setTasks}
           onTaskUpdated={handleUpdate}

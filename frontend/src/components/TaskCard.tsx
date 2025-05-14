@@ -25,7 +25,7 @@ interface TaskCardProps {
   onUpdate: (task: Task) => void;
 }
 
-const TaskCard: React.FC<TaskCardProps> = ({ task, onDelete, onToggleComplete, onUpdate }) => {
+const TaskCard: React.FC<TaskCardProps> = ({ task, onDelete, onToggleComplete, onUpdate }: TaskCardProps) => {
   const [isEditing, setIsEditing] = useState(false);
   const [editedTask, setEditedTask] = useState<Task>(task);
   const [newItemText, setNewItemText] = useState('');

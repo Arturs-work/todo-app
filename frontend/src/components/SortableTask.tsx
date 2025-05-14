@@ -10,13 +10,13 @@ interface SortableTaskProps {
     onToggleComplete: (id: string, itemIndex?: number) => void;
     onUpdate: (task: Task) => void;
 }
-  
-const SortableTask: React.FC<SortableTaskProps> = ({ 
-    task, 
-    onDelete, 
-    onToggleComplete, 
-    onUpdate 
-}) => {
+
+const SortableTask: React.FC<SortableTaskProps> = ({
+    task,
+    onDelete,
+    onToggleComplete,
+    onUpdate
+}: SortableTaskProps) => {
     const {
       attributes,
       listeners,

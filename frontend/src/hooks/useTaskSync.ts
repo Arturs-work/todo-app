@@ -36,13 +36,13 @@ export function useTaskSync(boardId: string) {
 
   // Sync pending changes when connection is restored
   useEffect(() => {
-    if (isConnected && socket) {
+    if (isConnected) {
       pendingChanges.create.forEach(task => socket.emit('createTask', task));
       pendingChanges.update.forEach(task => socket.emit('updateTask', task));
       pendingChanges.delete.forEach(id => socket.emit('deleteTask', id));
       setPendingChanges({ create: [], update: [], delete: [] });
     }
-  }, [isConnected, socket, pendingChanges]);
+  }, [isConnected]);
 
   useEffect(() => {
     if (!socket) return;

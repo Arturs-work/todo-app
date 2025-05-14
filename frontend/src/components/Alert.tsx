@@ -7,7 +7,7 @@ interface AlertProps {
     message?: string;
 }
 
-const AlertMessage: React.FC<AlertProps> = ({ type, message }) => {
+const AlertMessage: React.FC<AlertProps> = ({ type, message }: AlertProps) => {
     return (
         <Alert icon={<ErrorIcon fontSize="inherit" />} severity={type}>
             {message || 'Much wow'}
